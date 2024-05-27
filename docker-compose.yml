@@ -1,23 +1,38 @@
 version: '3.8'
 
 services:
-  teamcity-server:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=teamcity_password
+      - POSTGRES_USER=teamcity_user
+      - POSTGRES_DB=teamcity_db
+      - PG_DATA=/var/lib/postgresql/data
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    expose:
+      - "5432"
+
+  server:
     image: jetbrains/teamcity-server
-    container_name: teamcity-server
     ports:
       - "8111:8111"
     volumes:
-      - teamcity-server-data:/data/teamcity_server/datadir
-      - teamcity-server-logs:/opt/teamcity/logs
+      - server-data:/data/teamcity_server/datadir
+      - server-logs:/opt/teamcity/logs
+    depends_on:
+      - db
 
-  teamcity-agent:
+  agent:
     build: ./teamcity-agent
     environment:
-      - SERVER_URL=http://localhost:8111
+      - SERVER_URL=http://server:8111
     deploy:
       replicas: 3
 
 volumes:
-  teamcity-server-data:
-  teamcity-server-logs:
+  server-data:
+  server-logs:
+  pgdata:
 
