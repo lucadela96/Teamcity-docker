@@ -16,49 +16,28 @@ services:
 
   server:
     image: jetbrains/teamcity-server
+    restart: always
     ports:
       - "8111:8111"
     volumes:
       - server-data:/data/teamcity_server/datadir
       - server-logs:/opt/teamcity/logs
+    extra_hosts:
+      cs-nuc-04: "192.168.198.210"
     depends_on:
       - db
 
   agent:
     build: ./teamcity-agent
+    restart: always
     environment:
       - SERVER_URL=http://server:8111
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # Mount Docker socket
+    extra_hosts:
+      cs-nuc-04: "192.168.198.210"
     deploy:
       replicas: 3
-
-  registry-ui:
-    image: joxit/docker-registry-ui:main
-    restart: always
-    ports:
-      - 5001:80
-    environment:
-      - SINGLE_REGISTRY=true
-      - REGISTRY_TITLE=Docker Registry UI
-      - DELETE_IMAGES=true
-      - SHOW_CONTENT_DIGEST=true
-      - NGINX_PROXY_PASS_URL=http://registry-server:5000
-      - SHOW_CATALOG_NB_TAGS=true
-      - CATALOG_MIN_BRANCHES=1
-      - CATALOG_MAX_BRANCHES=1
-      - TAGLIST_PAGE_SIZE=100
-      - REGISTRY_SECURED=false
-      - CATALOG_ELEMENTS_LIMIT=1000
-    container_name: registry-ui
-
-  registry-server:
-    image: registry:2
-    restart: always
-    volumes:
-      - ./registry/data:/var/lib/registry
-    container_name: registry-server
-
 
 volumes:
   server-data:
