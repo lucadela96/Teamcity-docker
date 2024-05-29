@@ -1,8 +1,13 @@
+# Use the base image
 FROM jetbrains/teamcity-agent
 
-# Add custom dependencies here
-# RUN apt-get update && apt-get install -y \
+# Install dependencies and Ansible
+USER root
+RUN apt update && \
+    apt install -y software-properties-common && \
+    apt-add-repository --yes --update ppa:ansible/ansible && \
+    apt install -y ansible
 
-# Clean up
-# RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# Switch back to the original user
+USER buildagent
 
